@@ -131,6 +131,8 @@ def cmd_split(args):
         argv.append("--dry-run")
     if args.min_sessions != 2:
         argv += ["--min-sessions", str(args.min_sessions)]
+    if args.palace:
+        argv += ["--palace", args.palace]
 
     old_argv = sys.argv
     sys.argv = ["mempalace split"] + argv
