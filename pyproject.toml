@@ -34,9 +34,6 @@ Homepage = "https://github.com/milla-jovovich/mempalace"
 Repository = "https://github.com/milla-jovovich/mempalace"
 "Bug Tracker" = "https://github.com/milla-jovovich/mempalace/issues"
 
-[tool.setuptools.package-data]
-mempalace = ["prompts/*.txt"]
-
 [project.scripts]
 mempalace = "mempalace:main"
 
