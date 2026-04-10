@@ -280,7 +280,7 @@ def rebuild_index(palace_path=None):
         print(f"  Re-filed {filed}/{len(all_ids)} drawers...")
 
     print(f"\n  Repair complete. {filed} drawers rebuilt.")
-    print(f"  HNSW index is now clean with cosine distance metric.")
+    print("  HNSW index is now clean with cosine distance metric.")
     print(f"\n{'=' * 55}\n")
 
 

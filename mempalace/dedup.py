@@ -126,7 +126,7 @@ def show_stats(palace_path=None):
     print(f"\n  Sources with {MIN_DRAWERS_TO_CHECK}+ drawers: {len(groups)}")
     print(f"  Total drawers in those sources: {total_drawers:,}")
 
-    print(f"\n  Top 15 by drawer count:")
+    print("\n  Top 15 by drawer count:")
     sorted_groups = sorted(groups.items(), key=lambda x: len(x[1]), reverse=True)
     for src, ids in sorted_groups[:15]:
         print(f"    {len(ids):4d}  {src[:65]}")
@@ -192,7 +192,7 @@ def dedup_palace(
     print(f"  Palace after: {col.count():,} drawers")
 
     if dry_run:
-        print(f"\n  [DRY RUN] No changes written. Re-run without --dry-run to apply.")
+        print("\n  [DRY RUN] No changes written. Re-run without --dry-run to apply.")
 
     print(f"{'=' * 55}\n")
 
