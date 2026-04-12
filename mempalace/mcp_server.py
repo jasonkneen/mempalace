@@ -688,7 +688,13 @@ def tool_update_drawer(drawer_id: str, content: str = None, wing: str = None, ro
 
 def tool_kg_query(entity: str, as_of: str = None, direction: str = "both"):
     """Query the knowledge graph for an entity's relationships."""
-    results = _kg.query_entity(entity, as_of=as_of, direction=direction)
+    try:
+        entity = sanitize_name(entity, "entity")
+    except ValueError as e:
+        return {"error": str(e)}
+    if direction not in ("outgoing", "incoming", "both"):
+        return {"error": "direction must be 'outgoing', 'incoming', or 'both'"}
+    results = _get_kg().query_entity(entity, as_of=as_of, direction=direction)
     return {"entity": entity, "as_of": as_of, "facts": results, "count": len(results)}
 
 
@@ -696,7 +702,24 @@ def tool_kg_add(
     subject: str, predicate: str, object: str, valid_from: str = None, source_closet: str = None
 ):
     """Add a relationship to the knowledge graph."""
-    triple_id = _kg.add_triple(
+    try:
+        subject = sanitize_name(subject, "subject")
+        predicate = sanitize_name(predicate, "predicate")
+        object = sanitize_name(object, "object")
+    except ValueError as e:
+        return {"success": False, "error": str(e)}
+
+    _wal_log(
+        "kg_add",
+        {
+            "subject": subject,
+            "predicate": predicate,
+            "object": object,
+            "valid_from": valid_from,
+            "source_closet": source_closet,
+        },
+    )
+    triple_id = _get_kg().add_triple(
         subject, predicate, object, valid_from=valid_from, source_closet=source_closet
     )
     return {"success": True, "triple_id": triple_id, "fact": f"{subject} → {predicate} → {object}"}
@@ -704,7 +727,17 @@ def tool_kg_add(
 
 def tool_kg_invalidate(subject: str, predicate: str, object: str, ended: str = None):
     """Mark a fact as no longer true (set end date)."""
-    _kg.invalidate(subject, predicate, object, ended=ended)
+    try:
+        subject = sanitize_name(subject, "subject")
+        predicate = sanitize_name(predicate, "predicate")
+        object = sanitize_name(object, "object")
+    except ValueError as e:
+        return {"success": False, "error": str(e)}
+    _wal_log(
+        "kg_invalidate",
+        {"subject": subject, "predicate": predicate, "object": object, "ended": ended},
+    )
+    _get_kg().invalidate(subject, predicate, object, ended=ended)
     return {
         "success": True,
         "fact": f"{subject} → {predicate} → {object}",
@@ -714,7 +747,12 @@ def tool_kg_invalidate(subject: str, predicate: str, object: str, ended: str = N
 
 def tool_kg_timeline(entity: str = None):
     """Get chronological timeline of facts, optionally for one entity."""
-    results = _kg.timeline(entity)
+    if entity is not None:
+        try:
+            entity = sanitize_name(entity, "entity")
+        except ValueError as e:
+            return {"error": str(e)}
+    results = _get_kg().timeline(entity)
     return {"entity": entity or "all", "timeline": results, "count": len(results)}
 
 
