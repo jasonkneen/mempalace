@@ -145,13 +145,25 @@ _kg_instance = None
 
 
 def _get_kg() -> KnowledgeGraph:
-    """Lazily initialize the KnowledgeGraph using the configured palace path."""
+    """Lazily initialize the KnowledgeGraph.
+
+    Use KnowledgeGraph's default database path unless the palace path was
+    explicitly overridden via CLI or environment.
+    """
     global _kg_instance
     if _kg_instance is None:
-        import os
+        explicit_palace = False
+        args = globals().get("_args")
+        if getattr(args, "palace", None):
+            explicit_palace = True
+        elif os.environ.get("MEMPALACE_PALACE"):
+            explicit_palace = True
 
-        db_path = os.path.join(_config.palace_path, "knowledge_graph.sqlite3")
-        _kg_instance = KnowledgeGraph(db_path=db_path)
+        if explicit_palace:
+            db_path = os.path.join(_config.palace_path, "knowledge_graph.sqlite3")
+            _kg_instance = KnowledgeGraph(db_path=db_path)
+        else:
+            _kg_instance = KnowledgeGraph()
     return _kg_instance
 
 def _get_collection(create=False):
