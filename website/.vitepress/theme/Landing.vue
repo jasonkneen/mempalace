@@ -453,7 +453,6 @@ onBeforeUnmount(() => {
           <span class="sep" aria-hidden="true">·</span>
           <a href="https://github.com/MemPalace/mempalace">GitHub ↗</a>
         </div>
-
       </div>
 
       <!-- Palace video visual -->
@@ -522,7 +521,7 @@ onBeforeUnmount(() => {
       <article class="demo-pane demo-remember">
         <header>
           <span class="pane-tag">with mempalace</span>
-          <span class="pane-meta">verbatim &middot; retrieved &lt;<em>50&nbsp;ms</em></span>
+          <span class="pane-meta">verbatim &middot; retrieved <em>instantly</em></span>
         </header>
         <div class="chat" data-pane="remember" aria-live="polite"></div>
       </article>
@@ -541,10 +540,10 @@ onBeforeUnmount(() => {
         </h2>
       </div>
       <p class="lede">
-        A two-thousand-year-old memory technique, reworked for a machine.
-        Broad categories nest time-based groupings; time-based groupings hold
-        verbatim drawers. A symbolic index lets the model scan thousands of
-        drawers in a single breath and open only the ones it needs.
+        An ancient memory technique, reworked for a machine. Broad categories
+        nest time-based groupings; time-based groupings hold verbatim drawers.
+        A symbolic index lets the model scan thousands of drawers in a single
+        pass and open only the ones it needs.
       </p>
     </div>
 
@@ -611,8 +610,8 @@ onBeforeUnmount(() => {
       </h2>
       <p class="lede">
         The content stays verbatim — always. The <em>index</em> above it is written
-        in AAAK: a dense symbolic dialect an LLM can scan at a glance. Tens of
-        thousands of entries, one pass, exact drawer located.
+        in AAAK: a dense symbolic dialect an LLM can scan at a glance. Thousands
+        of entries, one pass, exact drawer located.
       </p>
     </div>
 
@@ -659,8 +658,8 @@ onBeforeUnmount(() => {
     </div>
 
     <p class="dialect-caption">
-      Ninety-plus percent compression on the pointer layer. One hundred percent
-      fidelity on the content layer. You get speed without ever losing a word.
+      Dense compression on the pointer layer. Full fidelity on the content
+      layer. You get speed without ever losing a word.
     </p>
   </section>
 
@@ -762,7 +761,7 @@ onBeforeUnmount(() => {
 <span class="ok">  ✓</span> palace created at <span class="dim">~/.mempalace</span>
 <span class="ok">  ✓</span> hooks registered <span class="dim">(stop, precompact)</span>
 <span class="ok">  ✓</span> knowledge graph initialized
-<span class="prompt">$</span> mempalace remember <span class="dim">"memory is identity."</span>
+<span class="prompt">$</span> mempalace mine <span class="dim">./notes</span>
 <span class="ok">  ✓</span> filed · <span class="c">W-001/R-01/D-001</span></pre>
     </div>
 
