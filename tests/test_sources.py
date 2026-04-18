@@ -103,7 +103,7 @@ def test_source_summary_default_uses_adapter_name():
 
 
 def test_source_ref_options_default_is_empty_dict():
-    # Frozen dataclass must not share default_factory=list instance across instances.
+    # Frozen dataclass must not share a default_factory=dict instance across instances.
     a = SourceRef(uri="a")
     b = SourceRef(uri="b")
     a.options["touched"] = True
@@ -280,6 +280,27 @@ def test_palace_context_upsert_drawer_stamps_adapter_metadata():
     assert meta["chunk_index"] == 2
 
 
+def test_palace_context_drawer_id_is_sha256_prefix_not_sha1():
+    """Guards against the pre-review sha1[:16]=64-bit id scheme.
+
+    64-bit ids sit close to the birthday bound for palace-sized corpora.
+    The helper uses sha256[:24]=96 bits so collision risk stays negligible.
+    """
+    import hashlib
+
+    from mempalace.sources.context import _build_drawer_id
+
+    src = "/an/absolute/path/to/a/file.txt"
+    record = DrawerRecord(content="x", source_file=src, chunk_index=3)
+    drawer_id = _build_drawer_id(record)
+
+    expected_prefix = hashlib.sha256(src.encode("utf-8")).hexdigest()[:24]
+    assert drawer_id == f"{expected_prefix}_3"
+    # Negative: the old sha1 scheme MUST NOT produce the same id.
+    sha1_prefix = hashlib.sha1(src.encode("utf-8")).hexdigest()[:16]
+    assert drawer_id != f"{sha1_prefix}_3"
+
+
 def test_palace_context_skip_current_item_sets_flag():
     ctx = PalaceContext(
         drawer_collection=_FakeCollection(),
@@ -351,6 +372,25 @@ def test_knowledge_graph_add_triple_accepts_source_drawer_id_and_adapter_name(tm
         assert row["source_drawer_id"] == "abc123_0"
         assert row["adapter_name"] == "git"
         conn.close()
+    finally:
+        kg.close()
+
+
+def test_knowledge_graph_fresh_schema_includes_new_columns(tmp_path):
+    """Brand-new palaces should get source_drawer_id / adapter_name directly
+    from CREATE TABLE, not via a post-hoc ALTER. _migrate_schema exists only
+    for legacy palaces."""
+    import sqlite3
+
+    from mempalace.knowledge_graph import KnowledgeGraph
+
+    kg = KnowledgeGraph(db_path=str(tmp_path / "fresh.sqlite3"))
+    try:
+        conn = sqlite3.connect(str(tmp_path / "fresh.sqlite3"))
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(triples)")}
+        conn.close()
+        assert "source_drawer_id" in cols
+        assert "adapter_name" in cols
     finally:
         kg.close()
 

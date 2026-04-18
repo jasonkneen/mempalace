@@ -83,6 +83,8 @@ class KnowledgeGraph:
                 confidence REAL DEFAULT 1.0,
                 source_closet TEXT,
                 source_file TEXT,
+                source_drawer_id TEXT,
+                adapter_name TEXT,
                 extracted_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (subject) REFERENCES entities(id),
                 FOREIGN KEY (object) REFERENCES entities(id)
@@ -99,11 +101,12 @@ class KnowledgeGraph:
     def _migrate_schema(self, conn):
         """Backwards-compatible schema migration for older triples tables.
 
-        RFC 002 §5.5 adds two optional provenance columns so adapter-written
-        triples can be traced back to (a) the specific drawer that produced
-        them and (b) the adapter that authored them. Older palaces predate
-        these columns; SQLite has no ``ADD COLUMN IF NOT EXISTS``, so we
-        introspect the schema first and only issue the ALTER if needed.
+        Fresh palaces get ``source_drawer_id`` / ``adapter_name`` (RFC 002 §5.5)
+        directly from the canonical ``CREATE TABLE`` above, so this path is a
+        no-op on new installs. It exists for palaces that were created before
+        those columns were added: SQLite has no ``ADD COLUMN IF NOT EXISTS``,
+        so we introspect the schema and only issue the ALTER when the column
+        is missing.
         """
         existing = {row["name"] for row in conn.execute("PRAGMA table_info(triples)")}
         if "source_drawer_id" not in existing:

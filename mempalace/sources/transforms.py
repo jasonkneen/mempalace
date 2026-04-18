@@ -24,7 +24,19 @@ conformance suite can locate and apply them.
 from __future__ import annotations
 
 import re
-from typing import Callable
+from typing import Protocol, Union
+
+
+class Transformation(Protocol):
+    """Callable signature every reserved transformation conforms to.
+
+    Accepts the current stage of the pipeline — ``bytes`` on input
+    (``utf8_replace_invalid``) or ``str`` after decoding — and returns ``str``.
+    Adapters compose them in declaration order; the first step operates on the
+    original source bytes, every subsequent step on the prior step's output.
+    """
+
+    def __call__(self, data: Union[bytes, str], /) -> str: ...
 
 
 # ---------------------------------------------------------------------------
@@ -90,12 +102,14 @@ def blank_line_drop(text: str) -> str:
 
 # The following reserved transformations are declared in the spec but are
 # deeply adapter-specific. Rather than guess a single reference implementation
-# now, we provide identity shims that raise if invoked without adapter-supplied
-# context. Adapters that declare these MUST either override with a concrete
-# implementation or provide a namespaced reference under
+# now, we provide identity shims that leave the input unchanged when no
+# adapter-specific implementation is available. Adapters that declare these
+# MUST either override with a concrete implementation or provide a namespaced
+# reference under
 # ``mempalace.sources.transforms.<adapter_name>_<transform_name>`` (per the
 # module docstring). The conformance suite looks up the adapter-specific
-# implementation first, falling back to these only when none exists.
+# implementation first, falling back to these identity shims only when none
+# exists.
 
 
 def strip_tool_chrome(text: str) -> str:
@@ -146,7 +160,10 @@ def speaker_role_assignment(text: str) -> str:
 
 # Reserved transformation name → reference implementation.
 # Adapters look up by name to compose a round-trip pipeline during testing.
-RESERVED_TRANSFORMATIONS: dict[str, Callable[..., str]] = {
+# The value conforms to the :class:`Transformation` protocol above; we type
+# it as that Protocol rather than a concrete ``Callable`` so static checkers
+# accept both the bytes→str (``utf8_replace_invalid``) and str→str shapes.
+RESERVED_TRANSFORMATIONS: dict[str, Transformation] = {
     "utf8_replace_invalid": utf8_replace_invalid,
     "newline_normalize": newline_normalize,
     "whitespace_trim": whitespace_trim,
@@ -163,7 +180,7 @@ RESERVED_TRANSFORMATIONS: dict[str, Callable[..., str]] = {
 }
 
 
-def get_transformation(name: str) -> Callable[..., str]:
+def get_transformation(name: str) -> Transformation:
     """Resolve a reserved transformation by name.
 
     Raises :class:`KeyError` if the name is neither reserved nor registered as
